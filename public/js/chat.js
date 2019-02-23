@@ -1,7 +1,7 @@
 var socket = io();
 
 function scrollToBottom() {
-    
+
     // Selectors
     var messages = jQuery('#messages');
     var newMessage = messages.children('li:last-child');
@@ -20,6 +20,16 @@ function scrollToBottom() {
 
 socket.on('connect', function () {
     console.log("Connected to server");
+    var params = jQuery.deparam(window.location.search);
+
+    socket.emit('join', params, function (err) {
+        if (err) {
+            alert(err);
+            window.location.href = '/';
+        } else {
+            console.log('No error');
+        }
+    });
 });
 
 socket.on('disconnect', function () {
@@ -37,10 +47,10 @@ socket.on('newMessage', function (msg) {
 
     jQuery('#messages').append(html);
     scrollToBottom();
-    
+
 });
 
-socket.on('newLocationMessage', function(message) {
+socket.on('newLocationMessage', function (message) {
     var formattedTime = moment(message.createdAt).format('h:mm a');
     var template = jQuery('#location-message-template').html();
     var html = Mustache.render(template, {
@@ -54,7 +64,7 @@ socket.on('newLocationMessage', function(message) {
 });
 
 
-jQuery('#message-form').on('submit', function(e) {
+jQuery('#message-form').on('submit', function (e) {
     e.preventDefault();
 
     var messageTextbox = jQuery('[name=message]');
@@ -62,13 +72,13 @@ jQuery('#message-form').on('submit', function(e) {
     socket.emit('createMessage', {
         from: "USER",
         text: messageTextbox.val()
-    }, function() {
+    }, function () {
         messageTextbox.val('');
     });
 });
 
 var locationButton = jQuery('#send-location');
-locationButton.on('click', function() {
+locationButton.on('click', function () {
     if (!navigator.geolocation) {
         return alert('Geolocation not supported by your browser');
     }
